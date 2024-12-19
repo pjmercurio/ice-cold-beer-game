@@ -2,16 +2,19 @@ const block1 = document.getElementById("block1");
 const block2 = document.getElementById("block2");
 const canvas = document.getElementById("lineCanvas");
 const ball = document.getElementById("ball");
+const lives = document.getElementById("lives");
 
 // Initialize canvas context
 const ctx = canvas.getContext("2d");
 
 // Holes
 const holesContainer = document.getElementById("holes");
-const holeRadius = 35; // Radius of each hole (half of its width/height)
+const holeRadius = 35;
+let collisionDetected = false;
 
 // Initialize positions
-let currentLevel = 1;
+let currentLevel = 0;
+let currentLives = 2;
 let block1Y = window.innerHeight - block1.offsetHeight;
 let block2Y = window.innerHeight - block2.offsetHeight;
 let ballX = 50; // Start ball near the left block
@@ -82,7 +85,8 @@ function updateBall(tilt, x1, y1, x2, y2) {
     // Calculate inner boundaries of the line (inner edges of the blocks)
     const block1InnerX = x1 + block1.offsetWidth / 2;
     const block2InnerX = x2 - block2.offsetWidth / 2;
-    const maxBallX = Math.hypot(block2InnerX - block1InnerX, y2 - y1) - ballRadius;
+    const minBallX = block1InnerX + (block1.offsetWidth * 2);
+    const maxBallX = block2InnerX - (block2.offsetWidth * 2);
 
     // Bounce effect
     if (ballX <= 0) {
@@ -96,11 +100,14 @@ function updateBall(tilt, x1, y1, x2, y2) {
     // Calculate the ball's vertical position
     const ballY = y1 + tilt * ballX - ballRadius; // Adjust for ball's radius
     ball.style.left = block1InnerX + ballX - ballRadius + "px"; // Position horizontally relative to block1InnerX
-    ball.style.top = ballY - 20 + "px"; // Position vertically
+    ball.style.top = ballY - ballRadius + "px"; // Position vertically
 }
 
 // Function to handle movement based on active keys
 function moveBlocks() {
+    // Prevent holding through level transition
+    if (collisionDetected) return;
+
     // Move left block up
     if (activeKeys["w"]) {
         block1Y = Math.max(0, block1Y - blockMoveSpeed);
@@ -125,6 +132,8 @@ function moveBlocks() {
 
 // Check if the ball overlaps with any hole
 function checkCollision() {
+    if (collisionDetected) return;
+
     const ballRect = ball.getBoundingClientRect();
     const ballCenterX = ballRect.left + ball.offsetWidth / 2;
     const ballCenterY = ballRect.top + ball.offsetHeight / 2;
@@ -139,12 +148,36 @@ function checkCollision() {
 
         // If the ball overlaps the hole, trigger the "fall in" effect
         if (distance < holeRadius) {
+            collisionDetected = true;
             ball.style.transition = "transform 300ms ease-out, opacity 300ms ease-out";
             ball.style.transform = "scale(0)";
             ball.style.opacity = "0";
-            setTimeout(resetGame, 500);
+
+            // Check if the hole is the current winning hole
+            if (hole.classList.contains("currentLevel")) {
+                currentLevel++;
+                setTimeout(resetLevel, 500);
+            } else {
+                loseLife();
+            }
         }
     });
+}
+
+function loseLife() {
+    console.log("CURRENT LIVES: ", currentLives);
+    if (currentLives === 0) {
+        setTimeout(endGame, 500);
+    } else {
+        setTimeout(resetLevel, 500);
+    }
+    currentLives--;
+    lives.children[0]?.remove();
+}
+
+function endGame() {
+    alert(`Game Over! You made it to level ${currentLevel}.`);
+    resetGame();
 }
 
 // Start the movement loop
@@ -157,6 +190,7 @@ function startMoveLoop() {
 // Stop the movement loop
 function stopMoveLoop() {
     if (!Object.keys(activeKeys).length) {
+        console.log("CLEARING INTERVAL");
         clearInterval(moveInterval);
         moveInterval = null;
     }
@@ -186,6 +220,14 @@ function gameLoop() {
 }
 
 function resetGame() {
+    currentLevel = 0;
+    currentLives = 2;
+    lives.innerHTML = '<div class="ball"></div><div class="ball"></div>';
+    resetLevel();
+}
+
+function resetLevel() {
+    collisionDetected = false;
     block1.style.transition = "top 0.5s";
     block2.style.transition = "top 0.5s";
     block1Y = window.innerHeight - block1.offsetHeight;
@@ -198,21 +240,24 @@ function resetGame() {
         block1.style.transition = "none";
         block2.style.transition = "none";
     }, 500);
+    createHoles();
 }
 
 // Initialize
 resizeCanvas();
+resetLevel();
 gameLoop();
 
 // Create random holes
 function createHoles() {
+    holesContainer.innerHTML = "";
     const holePositions = [
         [0.5, 0.05],
         [0.4, 0.07],
         [0.2, 0.1],
         [0.3, 0.12],
         [0.7, 0.15],
-        [0.5, 0.17],
+        [0.51, 0.17],
         [0.4, 0.2],
         [0.8, 0.2],
         [0.45, 0.25],
@@ -233,6 +278,7 @@ function createHoles() {
         [0.6, 0.5],
         [0.15, 0.55],
         [0.3, 0.55],
+        [0.05, 0.55],
         [0.25, 0.6],
         [0.5, 0.52],
         [0.7, 0.52],
@@ -257,6 +303,10 @@ function createHoles() {
         const hole = document.createElement("div");
         hole.className = isWinningHole ? "hole winningHole" : "hole";
 
+        if (isWinningHole && currentLevel === index) {
+            hole.classList.add("currentLevel");
+        }
+
         // Random position within the container
         const holeX = holePosition[0] * (window.innerWidth - holeRadius * 2);
         const holeY = holePosition[1] * (window.innerHeight - holeRadius * 2);
@@ -265,7 +315,7 @@ function createHoles() {
         hole.style.top = `${holeY}px`;
         hole.style.height = `${holeRadius * 2}px`;
         hole.style.width = `${holeRadius * 2}px`;
-        hole.innerText = index;
+        // hole.innerText = index;
 
         // Attach data attributes for position
         hole.dataset.x = holeX + holeRadius; // Center X
@@ -275,6 +325,3 @@ function createHoles() {
         index++;
     }
 }
-
-createHoles();
-

@@ -6,7 +6,7 @@ body {
     margin: 0;
     background: linear-gradient(to right,
         #a16f1f, /* Dark gold on the left */
-        #f9d423 40%, /* Bright yellow-gold in the center */
+        #debf22 40%, /* Bright yellow-gold in the center */
         #a16f1f /* Dark gold on the right */
     );
 }
@@ -33,8 +33,7 @@ body {
     z-index: 1;
 }
 
-#ball {
-    position: absolute;
+.ball {
     width: 40px;
     height: 40px;
     background-color: white;
@@ -45,6 +44,24 @@ body {
         #aaa 70%, /* Main silver color */
         #666); /* Darker metallic edges */
     z-index: 3;
+}
+
+#ball {
+    position: absolute;
+}
+
+#lives {
+    display: flex;
+    column-gap: 8px;
+}
+
+#scoreboard {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    color: black;
+    font-size: 24px;
+    font-weight: bold;
 }
 
 #holes {
@@ -61,11 +78,25 @@ body {
     position: absolute;
     border-radius: 50%;
     background-color: rgba(50, 50, 50, 1); /* Dark circle */
-    box-shadow: inset 4px -4px 10px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0px 0px 16px rgba(0, 0, 0, 0.8);
     z-index: -1;
 }
 
 .winningHole {
     outline: rgb(54, 39, 39) dashed 3px;
     outline-offset: 2px;
+}
+
+.currentLevel {
+    background-color: gold;
+    animation: blink 2s infinite;
+}
+
+@keyframes blink {
+    0%, 50% {
+        background-color: gold; /* Original color */
+    }
+    25%, 75% {
+        background-color: black; /* Or another color if desired */
+    }
 }
