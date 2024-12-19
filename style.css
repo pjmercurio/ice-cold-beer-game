@@ -1,0 +1,71 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(to right,
+        #a16f1f, /* Dark gold on the left */
+        #f9d423 40%, /* Bright yellow-gold in the center */
+        #a16f1f /* Dark gold on the right */
+    );
+}
+
+#container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.block {
+    position: absolute;
+    width: 50px;
+    height: 100px;
+    background-color: #3498db;
+    z-index: 2;
+    /* box-shadow: 0px 0px 8px 2px rgba(0, 0, 0, 0.6); */
+}
+
+#line {
+    position: absolute;
+    width: 2px;
+    background-color: #2ecc71;
+    z-index: 1;
+}
+
+#ball {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: white;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, 
+        rgba(255, 255, 255, 1), /* Specular highlight */
+        rgba(200, 200, 200, 1), 
+        #aaa 70%, /* Main silver color */
+        #666); /* Darker metallic edges */
+    z-index: 3;
+}
+
+#holes {
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Prevent interference with mouse events */
+    z-index: 0;
+}
+
+.hole {
+    color: white;
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(50, 50, 50, 1); /* Dark circle */
+    box-shadow: inset 4px -4px 10px rgba(0, 0, 0, 0.8);
+    z-index: -1;
+}
+
+.winningHole {
+    outline: rgb(54, 39, 39) dashed 3px;
+    outline-offset: 2px;
+}
